@@ -7,13 +7,13 @@
   - 사이드카 프록시는 Mesh Library를 사용하여 서비스 메쉬의 트래픽 제어, 보안, 정책 적용 등의 기능을 수행
   - pod 구성이 될 때 사이드카 프록시 구성
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 
 - Istio 구성
   - Data Plane
@@ -33,7 +33,7 @@
     - 프록시에 트래픽이 연결될 수 있도록 관리
     - 서비스 디스커버리, 설정, 인증서 관리
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 
 - Istio 주요 기능 : 트래픽 관리
   - 트래픽 분리
