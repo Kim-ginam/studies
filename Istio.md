@@ -21,7 +21,7 @@
       : 로드밸런싱
       : TLS termination
       : HTTP/2, gPRC 프록시
-      : Circuit breakers
+      : Circuit breakers 
       : 단계별 배포
       : 오류 주입
       : 메트릭 정보
@@ -58,7 +58,7 @@ Istio는 네트워크 레벨에서 전체적인 트래픽을 제어하고, Sprin
 
 ![alt text](images/image-4.png)
 ![alt text](images/image-5.png)
-
+a
 - Istio 설치
   - helm chart 이용 (https://istio.io/latest/docs/setup/install/helm/)
  
@@ -90,6 +90,7 @@ Istio는 네트워크 레벨에서 전체적인 트래픽을 제어하고, Sprin
   helm install istio-ingress istio/gateway -n istio-ingress --wait --set service.annotation."로드밸런서 컨트롤러
 
 ```
+![alt text](images/image-7.png) 
 - gateway.yaml
 ![alt text](images/image-8.png) 
 - virtualservice.yaml
