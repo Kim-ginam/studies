@@ -58,7 +58,7 @@ Istio는 네트워크 레벨에서 전체적인 트래픽을 제어하고, Sprin
 
 ![alt text](images/image-4.png)
 ![alt text](images/image-5.png)
-a
+
 - Istio 설치
   - helm chart 이용 (https://istio.io/latest/docs/setup/install/helm/)
  
