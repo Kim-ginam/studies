@@ -45,4 +45,53 @@ spring:
     port: 5672
     username: guest
     password: guest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, busrefresh, refresh, metrics
 ```
+- 게이트웨이 설정(actuator 지정)
+```yaml
+- id: user-service
+    uri: lb://USER-SERVICE
+    predicates:
+    - Path=/user-service/actuator/**
+    - Method=GET,POST
+    filters:
+    - RemoveRequestHeader=Cookie
+    - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+```    
+- 테스트
+    1. 현재 설정된 시크릿 값
+    ![alt text](images/image-35.png)
+    2. 로그인
+    ![alt text](images/image-36.png)
+    ![alt text](images/image-37.png)
+    - environment.getProperty("token.secret") = user_secret_key_1234567
+    3. API Gateway 테스트
+    ![alt text](images/image-38.png)
+    - env.getProperty("token.secret") = user_secret_key_1234567
+    4. 성공
+    ![alt text](images/image-39.png)
+    5. 시크릿 변경
+    ![alt text](images/image-40.png)
+    6. busrefresh
+    ![alt text](images/image-41.png)
+    - 204는 정상적으로 성공이지만 서버로부터 응답이 없음을 뜻함
+    7. refresh 확인
+    ![alt text](images/image-42.png)
+    - API Gateway
+        - 2024-10-10T18:55:23.031+09:00  INFO 16712 --- [apigateway-service] [nfoReplicator-0] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_APIGATEWAY-SERVICE/host.docker.internal:apigateway-service:8000: registering service...
+    - USER-SERVICE        
+        - 2024-10-10T18:55:23.559+09:00  INFO 28104 --- [user-service] [nfoReplicator-0] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_USER-SERVICE/user-service:f9278900d40313b2f2e44d2ae0b84ef3 - registration status: 204
+    - 
+    7. 로그인
+    ![alt text](images/image-43.png)
+    - env.getProperty("token.secret") = user_secret_key_1234567_changed
+    8. API Gateway 테스트
+    ![alt text](images/image-44.png)
+    - env.getProperty("token.secret") = user_secret_key_1234567_changed
+    9. 성공
+    ![alt text](images/image-45.png)
