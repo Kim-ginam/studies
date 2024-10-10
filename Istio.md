@@ -7,15 +7,12 @@
   - 사이드카 프록시는 Mesh Library를 사용하여 서비스 메쉬의 트래픽 제어, 보안, 정책 적용 등의 기능을 수행
   - pod 구성이 될 때 사이드카 프록시 구성
 
-![alt text](images/image.png)
-
-
 
 ![alt text](images/image-1.png)
 
 ![alt text](images/image-2.png)
 
-- Istio 구성
+## Istio 구성
   - Data Plane
     - 마이크로서비스간의 모든 네트워크 연결을 관리
     - Envoy 프록시를 사이드카 형태로 구성
@@ -35,6 +32,7 @@
 
 ![alt text](images/image-3.png)
 
+## Istio 주요 기능
 - Istio 주요 기능 : 트래픽 관리
   - 트래픽 분리
     - 복수개의 버전으로 트래픽을 라우팅할 수 있음
@@ -56,5 +54,55 @@ Istio는 애플리케이션 레벨이 아니라 네트워크 레벨에서 동작
   - 둘 다 사용하는 경우: 복잡한 마이크로서비스 아키텍처에서는 Istio와 Spring Cloud Resilience를 함께 사용하여 멀티 레이어 보호를 설정할 수 있습니다.
 Istio는 네트워크 레벨에서 전체적인 트래픽을 제어하고, Spring Cloud Resilience는 애플리케이션 레벨에서 세밀한 요청 제어와 회복 패턴을 관리합니다.
 
+## Istio 환경에 서비스 배포
 
+![alt text](images/image-4.png)
+![alt text](images/image-5.png)
+
+- Istio 설치
+  - helm chart 이용 (https://istio.io/latest/docs/setup/install/helm/)
+ 
+ ![alt text](images/image-6.png) 
+```
+  헬름 차트 등록 및 업데이트
+  $ helm repo add istio https://istio-release.storage.googleapis.com/charts
+  $ helm repo update
+  네임스페이스 생성
+  kubectl create namespace istio-system 
+
+  Istio base 설치(Istio 동작에 관련한 컨트롤 리소스)
+  helm install istio-base istio/base -n istio-system --set defaultRevision=default
+
+  생성 확인
+  $ helm ls -n istio-system
+
+  컨트롤 플레인의 역할을 하는 Istiod 설치
+  helm install istiod istio/istiod -n istio-system --wait
+
+  설치 확인
+  helm ls -n istio-system
+
+  Istiod 동작 확인
+  kubectl get deployments -n istio-system --output wide
+
+  Ingress 설치
+  kubectl create namespace istio-ingress
+  helm install istio-ingress istio/gateway -n istio-ingress --wait --set service.annotation."로드밸런서 컨트롤러
+
+```
+- gateway.yaml
+![alt text](images/image-8.png) 
+- virtualservice.yaml
+![alt text](images/image-17.png)
+
+- 디폴트 네임스페이스에 생성되는 파드들을 사이드카를 자동으로 주입
+```
+kubectl label namespace default istio-injection=enabled
+```
+- 어플리케이션 디플로이
+![alt text](images/image-18.png)
+
+- 요청 지연 발생 방법
+  - virtualservice에서 fault를 만들고 delay : percentage: value:50 (절반 딜레이)
+  - fixedDelay : 3s
 
