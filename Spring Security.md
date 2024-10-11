@@ -211,7 +211,7 @@ public class AuthenticationFilterNew  extends UsernamePasswordAuthenticationFilt
     - 토큰에는 subject (사용자 ID), expiration (만료 시간), issuedAt (발급 시각) 등이 포함됩니다.
     - 비밀 키는 환경 설정(token.secret)에서 가져오며, 이는 토큰 서명에 사용됩니다.
 
-- loadUserByUsername 인증 떔에 사용(UserDetailsService)
+- loadUserByUsername 인증 떄문에 사용(UserDetailsService)
     - UsernamePasswordAuthenticationToken
         - UsernamePasswordAuthenticationToken은 Spring Security에서 사용자 인증 정보를 담는 객체입니다.
         - 여기에서는 사용자가 로그인 화면에서 입력한 이메일(또는 사용자 이름)과 비밀번호를 담고 있습니다.
@@ -264,6 +264,14 @@ getAuthenticationManager().authenticate에서 비밀번호 비교
     - 생성된 토큰과 사용자 식별자를 응답 헤더(token, userId)에 추가합니다.
 - API Gateway 연관성
     - API Gateway에서 요청 헤더에 포함된 jwt를 파서하여 올바른 jwt인지 확인 하는 작업을 진행
+
+- JWT 검증 과정
+    - JWT는 헤더, 페이로드, 서명으로 구성된 문자열입니다.
+    - 서명 검증 과정
+        1. JWT에 포함된 헤더와 페이로드를 비밀 키를 사용해 서명 알고리즘으로 다시 서명을 생성합니다.
+        2. 이 새롭게 생성한 서명을 JWT에 포함되어 있는 기존 서명과 비교합니다.
+        3. 두 서명이 일치하면 토큰이 변조되지 않았고 유효한 것으로 간주합니다.
+        4. 두 서명이 일치하지 않으면 누군가 토큰을 수정한 것이므로, 검증에 실패하게 됩니다.
 
 ```xml
 pom.xml

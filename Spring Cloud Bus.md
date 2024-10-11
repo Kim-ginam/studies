@@ -87,11 +87,11 @@ management:
     - USER-SERVICE        
         - 2024-10-10T18:55:23.559+09:00  INFO 28104 --- [user-service] [nfoReplicator-0] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_USER-SERVICE/user-service:f9278900d40313b2f2e44d2ae0b84ef3 - registration status: 204
     - 
-    7. 로그인
+    8. 로그인
     ![alt text](images/image-43.png)
     - env.getProperty("token.secret") = user_secret_key_1234567_changed
-    8. API Gateway 테스트
+    9. API Gateway 테스트
     ![alt text](images/image-44.png)
     - env.getProperty("token.secret") = user_secret_key_1234567_changed
-    9. 성공
+    10. 성공
     ![alt text](images/image-45.png)
