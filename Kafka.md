@@ -1,4 +1,14 @@
 # Kafka를 이용한 데이터베이스 동기화 및 아키텍처 구성
+
+## Kafka란
+실시간으로 스트리밍 데이터를 수집하고 처리하는 데 최적화된 분산 스트리밍 플랫폼
+
+![alt text](images/image-56.png)
+![alt text](images/image-57.png)
+![alt text](images/image-58.png)
+![alt text](images/image-59.png)
+![alt text](images/image-60.png)
+![alt text](images/image-61.png)
 - 서비스 데이터 동기화 문제
     - 동일한 서비스를 수평적으로 확장할 때 데이터베이스에 저장되는 데이터의 동기화 문제가 발생할 수 있습니다.
     - 데이터 동기화 문제를 해결하는 방법:
