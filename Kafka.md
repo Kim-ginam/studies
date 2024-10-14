@@ -202,6 +202,47 @@ public OrderDto send(String topic, OrderDto orderDto) {
     kafkaTemplate.send(topic, jsonInString);
 }
 ```
+```json
+{
+    "name":"my-order-connect",
+    "config":{
+        "connector.class":"io.confluent.connect.jdbc.JdbcSinkConnector",
+        "connection.url":"jdbc:mysql://localhost:3307/mydb",
+        "connection.user":"root",
+        "connection.password":"test1357",
+        "auto.create":"true",
+        "auto.evolve":"true",
+        "delete.enabled":"false",
+        "tasks.max":"1",
+        "insert.mode":"upsert",  // upsert 모드로 설정
+        "pk.mode":"record_key",  // Kafka 메시지의 키를 DB의 Primary Key로 사용
+        "pk.fields":"order_id",   // Primary Key로 사용할 필드명 (DB의 필드 이름)
+        "topics":"orders"
+    }
+}
+```
+
+- 예시처럼 DTO클래스를 직렬화하여 사용 가능
+``` java
+@Data
+public class OrderDto implements Serializable {
+    private String productId;
+    private Integer qty;
+    private Integer unitPrice;
+    private Integer totalPrice;
+
+    private String orderId;
+    private String userId;
+}
+
+...
+
+이걸 그냥 jsonInString = mapper.writeValueAsString(orderDto);
+
+...
+
+해서 kafkaTemplate.send(topic, jsonInString);
+```
 
 ## 아키텍처 구성
 
@@ -210,3 +251,53 @@ public OrderDto send(String topic, OrderDto orderDto) {
     - Kafka를 사용하여 Producer에서 데이터를 큐잉하고, Consumer가 이를 수신하여 데이터베이스에 저장
 - @EnableKafka: Kafka 사용 설정
 - @KafkaListener: 특정 토픽을 리스닝하여 데이터를 수신
+
+## 카프카 yaml파일을 이용한 설정
+- application.yaml
+``` yaml
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/sns
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    properties:
+      security:
+        protocol: ${KAFKA_SASL_PROTOCOL}
+      sasl:
+        mechanism: ${KAFKA_SASL_MECHANISM}
+        jaas:
+          config:
+            org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_USER}" password="${KAFKA_PASSWORD}";
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+```
+- configMap.yaml
+``` yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: sns
+data:
+  KAFKA_HOST: "kafka.infra.svc.cluster.local"
+  KAFKA_PORT: "9092"
+  KAFKA_SASL_PROTOCOL: "SASL_PLAINTEXT"
+  KAFKA_SASL_MECHANISM: "PLAIN"
+```    
+- secret.yaml
+``` yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: sns
+data:
+  KAFKA_HOST: "kafka.infra.svc.cluster.local"
+  KAFKA_PORT: "9092"
+  KAFKA_SASL_PROTOCOL: "SASL_PLAINTEXT"
+  KAFKA_SASL_MECHANISM: "PLAIN"
+```
