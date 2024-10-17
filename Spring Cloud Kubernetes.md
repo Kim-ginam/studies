@@ -179,12 +179,23 @@ Spring Cloud Kubernetes는 Kubernetes와 Spring Cloud의 기능을 통합하여,
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: my-app-config
+  name: my-config
 data:
-  application.properties: |
-    my.property.value=Hello from ConfigMap
+  database.url: jdbc:mysql://localhost:3306/mydb
+  database.username: admin
+  database.password: password123
 ```
+Kubernetes에서 Secret을 생성하는 예시입니다:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+type: Opaque
+data:
+  api-key: c2VjcmV0S2V5MTIz  # "secretKey123"의 Base64 인코딩
 
+```
 #### 2. application.yaml 설정
 Spring Boot 애플리케이션에서 ConfigMap을 사용하는 설정 예시입니다:
 ```yaml
@@ -192,52 +203,44 @@ spring:
   cloud:
     kubernetes:
       config:
-        name: my-app-config
-        namespace: default
+        enabled: true
         sources:
-          - name: my-app-config
+          - name: my-config
+            namespace: default
+          - name: another-config
+            namespace: other-namespace
+
 ```
 
-이 설정은 Kubernetes의 `my-app-config` ConfigMap을 가져와 Spring Boot 애플리케이션의 환경 설정으로 사용하도록 합니다.
+이 설정은 Kubernetes의 `my-config` ConfigMap을 가져와 Spring Boot 애플리케이션의 환경 설정으로 사용하도록 합니다.
 
 #### 3. Spring 애플리케이션에서 ConfigMap 값 사용하기
 Spring Boot 애플리케이션에서 ConfigMap의 값을 가져오는 코드 예시입니다:
 ```java
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+@Value("${database.url}")
+private String databaseUrl;
 
-@RestController
-public class ConfigController {
-
-    @Value("${my.property.value}")
-    private String propertyValue;
-
-    @GetMapping("/config")
-    public String getConfigValue() {
-        return propertyValue;
-    }
-}
+@Value("${database.username}")
+private String databaseUsername;
 ```
 
 ### 동적 리로드 설정
-동적 리로드 기능을 사용하려면, Spring Cloud Kubernetes와 Spring Boot의 Actuator 기능을 조합하여 설정합니다. 이때 `@RefreshScope`를 사용하여 설정이 변경될 때 자동으로 빈이 다시 로드되도록 설정할 수 있습니다:
-```java
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+Spring Cloud Kubernetes는 Kubernetes ConfigMap이나 Secret이 변경되면 자동으로 설정을 업데이트할 수 있는 Config Watcher 기능을 제공합니다. 이를 통해 ConfigMap이나 Secret이 변경될 때 애플리케이션을 재시작하지 않고도 동적으로 설정을 반영할 수 있습니다.
+```yaml
+spring:
+  cloud:
+    kubernetes:
+      config:
+        enabled: true
+        name: my-config  # ConfigMap 이름
+      secrets:
+        enabled: true
+        name: my-secret  # Secret 이름   
+      reload:
+        enabled: true
+        mode: polling  # 변경 사항을 주기적으로 체크하여 반영
+        period: 15000  # 15초마다 ConfigMap/Secret의 변경을 확인
 
-@RefreshScope
-@RestController
-public class ConfigController {
-
-    @Value("${my.property.value}")
-    private String propertyValue;
-
-    @GetMapping("/config")
-    public String getConfigValue() {
-        return propertyValue;
-    }
 }
 ```
 

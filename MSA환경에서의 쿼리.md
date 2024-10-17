@@ -15,12 +15,47 @@
 ### API Aggregation Pattern
 - API를 여러개를 사용해서 가져온 데이터들을 가공을 통한 정보를 만드는 것
     ![alt text](images/image-82.png)
+``` java
+@RestController
+@RequestMapping("/api/aggregation")
+public class AggregationController {
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${remittance.service.url}")
+    private String remittanceServiceUrl;
+
+    @Value("${money.service.url}")
+    private String moneyServiceUrl;
+
+    @GetMapping("/summary")
+    public AggregationResponse getSummary(@RequestParam String userId) {
+        // 1. Remittance Service에서 송금 내역 가져오기
+        RemittanceResponse remittanceResponse = restTemplate.getForObject(
+            remittanceServiceUrl + "/remittances?userId=" + userId,
+            RemittanceResponse.class
+        );
+
+        // 2. Money Service에서 충전 내역 가져오기
+        MoneyResponse moneyResponse = restTemplate.getForObject(
+            moneyServiceUrl + "/charges?userId=" + userId,
+            MoneyResponse.class
+        );
+
+        // 3. 데이터 합산
+        int totalAmount = remittanceResponse.getTotalAmount() + moneyResponse.getTotalAmount();
+
+        // 4. 최종 결과 반환
+        return new AggregationResponse(totalAmount);
+    }
+}
+```
 - 주의할 점
     - 비즈니스 로직이 포함된 API 호출 빈도 파악
-        -   너무 자주 호출되는 경우라면, Aggregation을 위한 각 서비스의 API 가 부하를 받기 어려움
+        - 너무 자주 호출되는 경우라면, Aggregation을 위한 각 서비스의 API 가 부하를 받기 어려움
         - 대용량 DB의 경우, 추가적으로 호출되는 API 로 인해 DB의 부하 또는 다른 서비스들에 장애를 전파 가능성 존재
-
+        - get으로 리스트를 가져오고 그 이후 리스트를 반복문을 돌려 다른 api 호출할 경우 부하 발생
     - Aggregation API의 중요도
         - 여러번의 API 호출 중, 한 번이라도 실패 시 그 호출은 실패가 되어야 해요. 이를 고려
         - 그리고 여러번의 호출로 인해, 다른 서비스 API 보다 훨씬 긴 Latency 를 가지게 될 것
